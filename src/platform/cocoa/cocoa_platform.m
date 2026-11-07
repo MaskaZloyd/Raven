@@ -216,14 +216,29 @@ static void rvn_cocoa_resize_drag(rvn_pwindow_t* window) {
 @public rvn_pwindow_t* ravenWindow;
     NSTrackingArea* trackingArea;
 }
+- (void)detachRavenWindow;
 @end
 
 @implementation RavenCocoaView
 - (BOOL)isFlipped { return YES; }
+- (void)removeRavenTrackingArea {
+    if (trackingArea) {
+        [self removeTrackingArea:trackingArea];
+        [trackingArea release];
+        trackingArea = nil;
+    }
+}
+- (void)detachRavenWindow {
+    /* AppKit may dispatch a tracking event while closing the native window. */
+    ravenWindow = NULL;
+    [self removeRavenTrackingArea];
+}
 - (void)updateTrackingAreas {
-    if (trackingArea) { [self removeTrackingArea:trackingArea]; [trackingArea release]; trackingArea = nil; }
-    trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds] options:NSTrackingMouseMoved | NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways owner:self userInfo:nil];
-    [self addTrackingArea:trackingArea];
+    [self removeRavenTrackingArea];
+    if (ravenWindow) {
+        trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds] options:NSTrackingMouseMoved | NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways owner:self userInfo:nil];
+        [self addTrackingArea:trackingArea];
+    }
     [super updateTrackingAreas];
 }
 - (void)dealloc { if (trackingArea) [trackingArea release]; [super dealloc]; }
@@ -896,6 +911,7 @@ static void rvn_cocoa_window_destroy(rvn_pwindow_t* window) {
         [window->menu_bar release]; window->menu_bar = nil;
     }
     if (window->overlay_poll) { [window->overlay_poll invalidate]; window->overlay_poll = nil; }
+    [(RavenCocoaView*)window->view detachRavenWindow];
     if (window->handle) { [window->handle setDelegate:nil]; [window->handle close]; [window->handle release]; }
     if (window->delegate) [window->delegate release];
     if (window->view) {
