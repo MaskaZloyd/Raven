@@ -494,10 +494,17 @@ install(TARGETS raven EXPORT ravenTargets
 )
 install(DIRECTORY include/raven DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES include/Raven.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES LICENSE NOTICE THIRD_PARTY.md DESTINATION ${CMAKE_INSTALL_DATADIR}/raven)
+foreach(component stb nanosvg roboto roboto-mono wayland-protocols)
+	install(DIRECTORY "third_party/${component}/"
+		DESTINATION "${CMAKE_INSTALL_DATADIR}/raven/third_party/${component}"
+		FILES_MATCHING PATTERN "LICENSE*" PATTERN "COPYING")
+endforeach()
 install(EXPORT ravenTargets NAMESPACE raven:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/raven)
 
 configure_package_config_file(cmake/ravenConfig.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/ravenConfig.cmake"
-	INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/raven)
+	INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/raven
+	PATH_VARS CMAKE_INSTALL_DATADIR)
 write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/ravenConfigVersion.cmake"
 	VERSION ${PROJECT_VERSION} COMPATIBILITY SameMinorVersion)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/ravenConfig.cmake" "${CMAKE_CURRENT_BINARY_DIR}/ravenConfigVersion.cmake"
