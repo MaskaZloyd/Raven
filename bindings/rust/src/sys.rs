@@ -1643,18 +1643,6 @@ pub struct RSpring {
     pub started: c_int,
 }
 
-/// Logical coordinates and straight RGBA components in [0, 1].
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct RGradientVertex {
-    pub x: f32,
-    pub y: f32,
-    pub r: f32,
-    pub g: f32,
-    pub b: f32,
-    pub a: f32,
-}
-
 /// How an effect is drawn. Start from Rshader_look_init.
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -3707,10 +3695,6 @@ extern "C" {
     /// Anti-aliased cubic Bezier curve from (x0, y0) to (x1, y1), pulled by two control points.
     pub fn Rdraw_curve(painter: *mut RPainter, x0: f32, y0: f32, cx0: f32, cy0: f32, cx1: f32, cy1: f32, x1: f32, y1: f32, thickness: f32, r: f32, g: f32, b: f32, a: f32);
     pub fn Rdraw_triangle(painter: *mut RPainter, x0: f32, y0: f32, x1: f32, y1: f32, x2: f32, y2: f32, r: f32, g: f32, b: f32, a: f32);
-    /// Draws triangles with interpolated vertex colors on the Vulkan backend.
-    /// Vertices are grouped in triples. The data is consumed before the call returns.
-    /// Non-finite and degenerate triangles are skipped.
-    pub fn Rdraw_gradient_triangles(painter: *mut RPainter, vertices: *const RGradientVertex, count: usize);
     /// Texture stretched to a rectangle and multiplied by a tint color.
     pub fn Rdraw_image(painter: *mut RPainter, texture: Rid, x: f32, y: f32, width: f32, height: f32, r: f32, g: f32, b: f32, a: f32);
     /// Draws UTF-8 text; (x, y) is the top-left corner of the first line.

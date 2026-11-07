@@ -19,6 +19,7 @@
 #define RAVEN_VULKAN_H
 
 #include "raven_core.h"
+#include "raven_draw.h"
 
 /** Memory exported by Rvulkan_texture_create_shared. */
 typedef struct RSharedTextureInfo {
@@ -31,9 +32,22 @@ typedef struct RSharedTextureInfo {
 } RSharedTextureInfo;
 
 
+/** Logical coordinates and straight RGBA components in [0, 1]. */
+typedef struct RGradientVertex {
+	float x, y;
+	float r, g, b, a;
+} RGradientVertex;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+	/**
+	 * @brief Draws triangles with interpolated vertex colors on the Vulkan backend.
+	 * Vertices are grouped in triples. The data is consumed before the call returns.
+	 * Non-finite and degenerate triangles are skipped.
+	 */
+	RAVEN_API void Rdraw_gradient_triangles(RPainter* painter, const RGradientVertex* vertices, size_t count);
 
 	/* ============================================================================
 	 *  SHARING A DEVICE (call before Rinit)

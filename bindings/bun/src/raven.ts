@@ -1065,7 +1065,6 @@ const _symbols = {
 	Rdraw_line: { args: ["ptr", "f32", "f32", "f32", "f32", "f32", "f32", "f32", "f32", "f32"], returns: "void" },
 	Rdraw_curve: { args: ["ptr", "f32", "f32", "f32", "f32", "f32", "f32", "f32", "f32", "f32", "f32", "f32", "f32", "f32"], returns: "void" },
 	Rdraw_triangle: { args: ["ptr", "f32", "f32", "f32", "f32", "f32", "f32", "f32", "f32", "f32", "f32"], returns: "void" },
-	Rdraw_gradient_triangles: { args: ["ptr", "ptr", "usize"], returns: "void" },
 	Rdraw_image: { args: ["ptr", "u32", "f32", "f32", "f32", "f32", "f32", "f32", "f32", "f32"], returns: "void" },
 	Rdraw_text: { args: ["ptr", "u32", "f32", "f32", "f32", "ptr", "f32", "f32", "f32", "f32"], returns: "void" },
 	Rdraw_glass: { args: ["ptr", "f32", "f32", "f32", "f32", "f32", "f32", "f32", "f32", "f32"], returns: "void" },
@@ -4601,62 +4600,6 @@ export class RSpring extends RStruct {
 	}
 	set started(value: number) {
 		this._view.setInt32(8, value, true);
-	}
-}
-
-/** Logical coordinates and straight RGBA components in [0, 1]. */
-export class RGradientVertex extends RStruct {
-	static readonly SIZE = 24;
-
-	constructor(pointer?: Pointer) {
-		super(RGradientVertex.SIZE, pointer);
-	}
-
-	/** The structure at an address of the library, or null. */
-	static from(pointer: Pointer | null): RGradientVertex | null {
-		return pointer ? new RGradientVertex(pointer) : null;
-	}
-
-	get x(): number {
-		return this._view.getFloat32(0, true);
-	}
-	set x(value: number) {
-		this._view.setFloat32(0, value, true);
-	}
-
-	get y(): number {
-		return this._view.getFloat32(4, true);
-	}
-	set y(value: number) {
-		this._view.setFloat32(4, value, true);
-	}
-
-	get r(): number {
-		return this._view.getFloat32(8, true);
-	}
-	set r(value: number) {
-		this._view.setFloat32(8, value, true);
-	}
-
-	get g(): number {
-		return this._view.getFloat32(12, true);
-	}
-	set g(value: number) {
-		this._view.setFloat32(12, value, true);
-	}
-
-	get b(): number {
-		return this._view.getFloat32(16, true);
-	}
-	set b(value: number) {
-		this._view.setFloat32(16, value, true);
-	}
-
-	get a(): number {
-		return this._view.getFloat32(20, true);
-	}
-	set a(value: number) {
-		this._view.setFloat32(20, value, true);
 	}
 }
 
@@ -11406,15 +11349,6 @@ export function Rdraw_curve(painter: RPointer, x0: number, y0: number, cx0: numb
 
 export function Rdraw_triangle(painter: RPointer, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, r: number, g: number, b: number, a: number): void {
 	_lib.Rdraw_triangle(painter, x0, y0, x1, y1, x2, y2, r, g, b, a);
-}
-
-/**
- * Draws triangles with interpolated vertex colors on the Vulkan backend.
- * Vertices are grouped in triples. The data is consumed before the call returns.
- * Non-finite and degenerate triangles are skipped.
- */
-export function Rdraw_gradient_triangles(painter: RPointer, vertices: RGradientVertex | null, count: number): void {
-	_lib.Rdraw_gradient_triangles(painter, _p(vertices), count);
 }
 
 /** Texture stretched to a rectangle and multiplied by a tint color. */

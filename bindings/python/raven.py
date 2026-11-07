@@ -1755,18 +1755,6 @@ class RSpring(ctypes.Structure):
     ]
 
 
-class RGradientVertex(ctypes.Structure):
-    """Logical coordinates and straight RGBA components in [0, 1]."""
-    _fields_ = [
-        ("x", ctypes.c_float),
-        ("y", ctypes.c_float),
-        ("r", ctypes.c_float),
-        ("g", ctypes.c_float),
-        ("b", ctypes.c_float),
-        ("a", ctypes.c_float),
-    ]
-
-
 class RShaderLook(ctypes.Structure):
     """How an effect is drawn. Start from Rshader_look_init."""
     _fields_ = [
@@ -10945,17 +10933,6 @@ _lib.Rdraw_triangle.restype = None
 
 def Rdraw_triangle(painter, x0, y0, x1, y1, x2, y2, r, g, b, a):
     _lib.Rdraw_triangle(painter, x0, y0, x1, y1, x2, y2, r, g, b, a)
-
-
-_lib.Rdraw_gradient_triangles.argtypes = [ctypes.c_void_p, ctypes.POINTER(RGradientVertex), ctypes.c_size_t]
-_lib.Rdraw_gradient_triangles.restype = None
-
-
-def Rdraw_gradient_triangles(painter, vertices, count):
-    """Draws triangles with interpolated vertex colors on the Vulkan backend.
-    Vertices are grouped in triples. The data is consumed before the call returns.
-    Non-finite and degenerate triangles are skipped."""
-    _lib.Rdraw_gradient_triangles(painter, _p(vertices), count)
 
 
 _lib.Rdraw_image.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]

@@ -1,6 +1,7 @@
 @PACKAGE_INIT@
 
 set_and_check(raven_LICENSE_DIR "@PACKAGE_CMAKE_INSTALL_DATADIR@/raven")
+set(raven_VULKAN_ENABLED "@RAVEN_BACKEND_VULKAN@")
 
 include(CMakeFindDependencyMacro)
 if(NOT WIN32)

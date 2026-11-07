@@ -3223,67 +3223,6 @@ public final class R {
     }
 
     /**
-     * Logical coordinates and straight RGBA components in [0, 1].
-     */
-    public static final class RGradientVertex {
-        /** The size of the structure in C, in bytes. */
-        public static final long SIZE = 24;
-        private final MemorySegment s;
-        private Arena arena;
-
-        /** A new structure, zeroed (what `RGradientVertex x = {0};` is in C). */
-        public RGradientVertex() {
-            arena = Arena.ofAuto();
-            s = arena.allocate(SIZE, 4);
-        }
-
-        /** The structure at an address (given by the library, or a slice of an array). */
-        public RGradientVertex(MemorySegment address) {
-            s = address.reinterpret(SIZE);
-        }
-
-        private RGradientVertex(MemorySegment segment, Arena arena) {
-            this.s = segment;
-            this.arena = arena;
-        }
-
-        /** Its memory: what to give where C takes a pointer to it. */
-        public MemorySegment segment() { return s; }
-
-        /** `count` structures side by side, zeroed: an array of C. */
-        public static RGradientVertex[] array(int count) {
-            Arena a = Arena.ofAuto();
-            MemorySegment all = a.allocate(SIZE * Math.max(count, 1), 4);
-            RGradientVertex[] items = new RGradientVertex[count];
-            for (int i = 0; i < count; i++) items[i] = new RGradientVertex(all.asSlice(SIZE * i, SIZE), a);
-            return items;
-        }
-
-        private Arena arena() {
-            if (arena == null) arena = Arena.ofAuto();
-            return arena;
-        }
-
-        public float x() { return s.get(JAVA_FLOAT, 0); }
-        public RGradientVertex x(float value) { s.set(JAVA_FLOAT, 0, value); return this; }
-
-        public float y() { return s.get(JAVA_FLOAT, 4); }
-        public RGradientVertex y(float value) { s.set(JAVA_FLOAT, 4, value); return this; }
-
-        public float r() { return s.get(JAVA_FLOAT, 8); }
-        public RGradientVertex r(float value) { s.set(JAVA_FLOAT, 8, value); return this; }
-
-        public float g() { return s.get(JAVA_FLOAT, 12); }
-        public RGradientVertex g(float value) { s.set(JAVA_FLOAT, 12, value); return this; }
-
-        public float b() { return s.get(JAVA_FLOAT, 16); }
-        public RGradientVertex b(float value) { s.set(JAVA_FLOAT, 16, value); return this; }
-
-        public float a() { return s.get(JAVA_FLOAT, 20); }
-        public RGradientVertex a(float value) { s.set(JAVA_FLOAT, 20, value); return this; }
-    }
-
-    /**
      * How an effect is drawn. Start from Rshader_look_init.
      */
     public static final class RShaderLook {
@@ -19448,23 +19387,6 @@ public final class R {
         if ($h == null) Rdraw_triangle$ = $h = find("Rdraw_triangle", FunctionDescriptor.ofVoid(ADDRESS, JAVA_FLOAT, JAVA_FLOAT, JAVA_FLOAT, JAVA_FLOAT, JAVA_FLOAT, JAVA_FLOAT, JAVA_FLOAT, JAVA_FLOAT, JAVA_FLOAT, JAVA_FLOAT));
         try {
             $h.invokeExact((MemorySegment) (painter == null ? MemorySegment.NULL : painter), x0, y0, x1, y1, x2, y2, r, g, b, a);
-        } catch (Throwable $t) {
-            throw fail($t);
-        }
-    }
-
-    private static MethodHandle Rdraw_gradient_triangles$;
-
-    /**
-     * Draws triangles with interpolated vertex colors on the Vulkan backend.
-     * Vertices are grouped in triples. The data is consumed before the call returns.
-     * Non-finite and degenerate triangles are skipped.
-     */
-    public static void Rdraw_gradient_triangles(MemorySegment painter, RGradientVertex vertices, long count) {
-        MethodHandle $h = Rdraw_gradient_triangles$;
-        if ($h == null) Rdraw_gradient_triangles$ = $h = find("Rdraw_gradient_triangles", FunctionDescriptor.ofVoid(ADDRESS, ADDRESS, JAVA_LONG));
-        try {
-            $h.invokeExact((MemorySegment) (painter == null ? MemorySegment.NULL : painter), (MemorySegment) (vertices == null ? MemorySegment.NULL : vertices.segment()), count);
         } catch (Throwable $t) {
             throw fail($t);
         }

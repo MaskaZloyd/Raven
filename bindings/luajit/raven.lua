@@ -724,7 +724,6 @@ typedef struct RFileFilter RFileFilter;
 typedef struct RFileDialogDesc RFileDialogDesc;
 typedef struct RViewportDrawInfo RViewportDrawInfo;
 typedef struct RSpring RSpring;
-typedef struct RGradientVertex RGradientVertex;
 typedef struct RShaderLook RShaderLook;
 typedef struct RXmlError RXmlError;
 typedef struct RXmlAttributeInfo RXmlAttributeInfo;
@@ -1010,14 +1009,6 @@ struct RSpring {
 	float value;
 	float velocity;
 	int started;
-};
-struct RGradientVertex {
-	float x;
-	float y;
-	float r;
-	float g;
-	float b;
-	float a;
 };
 struct RShaderLook {
 	float color[4];
@@ -1974,7 +1965,6 @@ void Rdraw_circle(RPainter* painter, float center_x, float center_y, float radiu
 void Rdraw_line(RPainter* painter, float x0, float y0, float x1, float y1, float thickness, float r, float g, float b, float a);
 void Rdraw_curve(RPainter* painter, float x0, float y0, float cx0, float cy0, float cx1, float cy1, float x1, float y1, float thickness, float r, float g, float b, float a);
 void Rdraw_triangle(RPainter* painter, float x0, float y0, float x1, float y1, float x2, float y2, float r, float g, float b, float a);
-void Rdraw_gradient_triangles(RPainter* painter, const RGradientVertex* vertices, size_t count);
 void Rdraw_image(RPainter* painter, Rid texture, float x, float y, float width, float height, float r, float g, float b, float a);
 void Rdraw_text(RPainter* painter, Rid font, float size, float x, float y, const char* text, float r, float g, float b, float a);
 void Rdraw_glass(RPainter* painter, float x, float y, float width, float height, float radius, float r, float g, float b, float a);
