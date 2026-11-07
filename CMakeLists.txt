@@ -495,10 +495,12 @@ install(TARGETS raven EXPORT ravenTargets
 install(DIRECTORY include/raven DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES include/Raven.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES LICENSE NOTICE THIRD_PARTY.md DESTINATION ${CMAKE_INSTALL_DATADIR}/raven)
-foreach(component stb nanosvg roboto roboto-mono wayland-protocols)
-	install(DIRECTORY "third_party/${component}/"
-		DESTINATION "${CMAKE_INSTALL_DATADIR}/raven/third_party/${component}"
-		FILES_MATCHING PATTERN "LICENSE*" PATTERN "COPYING")
+# Licenses of the components embedded in the library (see THIRD_PARTY.md).
+file(GLOB RAVEN_THIRD_PARTY_LICENSES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/third_party"
+	"third_party/*/LICENSE*" "third_party/*/OFL*" "third_party/*/COPYING")
+foreach(license ${RAVEN_THIRD_PARTY_LICENSES})
+	get_filename_component(component "${license}" DIRECTORY)
+	install(FILES "third_party/${license}" DESTINATION ${CMAKE_INSTALL_DATADIR}/raven/licenses/${component})
 endforeach()
 install(EXPORT ravenTargets NAMESPACE raven:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/raven)
 
@@ -516,14 +518,8 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/ravenConfig.cmake" "${CMAKE_CURRENT_B
 # ---------------------------------------------------------------------------
 
 if(RAVEN_IS_TOP_LEVEL)
-	install(FILES README.md THIRD_PARTY.md DESTINATION ${CMAKE_INSTALL_DATADIR}/raven)
+	install(FILES README.md DESTINATION ${CMAKE_INSTALL_DATADIR}/raven)
 	install(DIRECTORY docs DESTINATION ${CMAKE_INSTALL_DATADIR}/raven)
-	# the licenses of what the library contains (THIRD_PARTY.md says what and why)
-	file(GLOB RAVEN_THIRD_PARTY_LICENSES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/third_party" "third_party/*/LICENSE*" "third_party/*/OFL*")
-	foreach(license ${RAVEN_THIRD_PARTY_LICENSES})
-		get_filename_component(component "${license}" DIRECTORY)
-		install(FILES "third_party/${license}" DESTINATION ${CMAKE_INSTALL_DATADIR}/raven/licenses/${component})
-	endforeach()
 	install(DIRECTORY bindings DESTINATION ${CMAKE_INSTALL_DATADIR}/raven
 		PATTERN "CMakeLists.txt" EXCLUDE PATTERN "target" EXCLUDE PATTERN "__pycache__" EXCLUDE PATTERN "Cargo.lock" EXCLUDE)
 
