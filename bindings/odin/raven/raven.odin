@@ -1637,6 +1637,16 @@ RSpring :: struct {
 	started: i32,
 }
 
+// Logical coordinates and straight RGBA components in [0, 1].
+RGradientVertex :: struct {
+	x: f32,
+	y: f32,
+	r: f32,
+	g: f32,
+	b: f32,
+	a: f32,
+}
+
 // How an effect is drawn. Start from Rshader_look_init.
 RShaderLook :: struct {
 	// First and second color, 0..1, straight alpha.
@@ -3680,6 +3690,10 @@ foreign lib {
 	// Anti-aliased cubic Bezier curve from (x0, y0) to (x1, y1), pulled by two control points.
 	Rdraw_curve :: proc(painter: ^RPainter, x0: f32, y0: f32, cx0: f32, cy0: f32, cx1: f32, cy1: f32, x1: f32, y1: f32, thickness: f32, r: f32, g: f32, b: f32, a: f32) ---
 	Rdraw_triangle :: proc(painter: ^RPainter, x0: f32, y0: f32, x1: f32, y1: f32, x2: f32, y2: f32, r: f32, g: f32, b: f32, a: f32) ---
+	// Draws triangles with interpolated vertex colors on the Vulkan backend.
+	// Vertices are grouped in triples. The data is consumed before the call returns.
+	// Non-finite and degenerate triangles are skipped.
+	Rdraw_gradient_triangles :: proc(painter: ^RPainter, vertices: ^RGradientVertex, count: uint) ---
 	// Texture stretched to a rectangle and multiplied by a tint color.
 	Rdraw_image :: proc(painter: ^RPainter, texture: Rid, x: f32, y: f32, width: f32, height: f32, r: f32, g: f32, b: f32, a: f32) ---
 	// Draws UTF-8 text; (x, y) is the top-left corner of the first line.

@@ -678,27 +678,33 @@ void rvn_paint_curve(RPainter* painter, const float points[8], const rvn_curve_t
 	instance->flags = R_PRIM_CURVE | ((uint32_t)(rvn_clampf(curve->pulse_strength, 0.0f, 1.0f) * 255.0f + 0.5f) << 8);
 }
 
-void rvn_paint_triangle(RPainter* painter, float x0, float y0, float x1, float y1, float x2, float y2, rvn_color_t color) {
+static RDrawInstance* rvn_paint_triangle_instance(RPainter* painter, float x0, float y0,
+	float x1, float y1, float x2, float y2) {
 	RDrawInstance* instance;
 	rvn_box_t bounds;
 	float ax = (painter->ox + x0) * painter->scale, ay = (painter->oy + y0) * painter->scale;
 	float bx = (painter->ox + x1) * painter->scale, by = (painter->oy + y1) * painter->scale;
 	float cx = (painter->ox + x2) * painter->scale, cy = (painter->oy + y2) * painter->scale;
 
-	color = rvn_paint_color(painter, color);
-	if (rvn_color_a(color) == 0) return;
 	bounds = rvn_box(rvn_minf(ax, rvn_minf(bx, cx)) - 1.0f, rvn_minf(ay, rvn_minf(by, cy)) - 1.0f,
 		rvn_maxf(ax, rvn_maxf(bx, cx)) + 1.0f, rvn_maxf(ay, rvn_maxf(by, cy)) + 1.0f);
 	instance = rvn_paint_emit(painter, bounds, R_INVALID_ID);
-	if (!instance) return;
+	if (!instance) return NULL;
 	instance->rect[0] = ax;
 	instance->rect[1] = ay;
 	instance->rect[2] = bx;
 	instance->rect[3] = by;
 	instance->radii[0] = cx;
 	instance->radii[1] = cy;
-	instance->color = color;
 	instance->flags = R_PRIM_TRIANGLE;
+	return instance;
+}
+
+void rvn_paint_triangle(RPainter* painter, float x0, float y0, float x1, float y1, float x2, float y2, rvn_color_t color) {
+	color = rvn_paint_color(painter, color);
+	if (rvn_color_a(color) == 0) return;
+	RDrawInstance* instance = rvn_paint_triangle_instance(painter, x0, y0, x1, y1, x2, y2);
+	if (instance) instance->color = color;
 }
 
 void rvn_paint_image(RPainter* painter, rvn_rect_t rect, Rid texture, const float uv[4],
@@ -890,6 +896,37 @@ void Rdraw_triangle(RPainter* painter, float x0, float y0, float x1, float y1,
 	float x2, float y2, float r, float g, float b, float a) {
 	if (!painter) return;
 	rvn_paint_triangle(painter, x0, y0, x1, y1, x2, y2, rvn_rgba(r, g, b, a));
+}
+
+static int rvn_gradient_vertex_valid(const RGradientVertex* vertex) {
+	return isfinite(vertex->x) && isfinite(vertex->y) && isfinite(vertex->r) &&
+		isfinite(vertex->g) && isfinite(vertex->b) && isfinite(vertex->a);
+}
+
+void Rdraw_gradient_triangles(RPainter* painter, const RGradientVertex* vertices, size_t count) {
+	if (!painter || !vertices) return;
+	for (size_t triangle = 0; triangle < count / 3; ++triangle) {
+		const RGradientVertex* a = vertices + 3 * triangle;
+		const RGradientVertex* b = a + 1;
+		const RGradientVertex* c = a + 2;
+		if (!rvn_gradient_vertex_valid(a) || !rvn_gradient_vertex_valid(b) ||
+		    !rvn_gradient_vertex_valid(c)) continue;
+		float area = (b->x - a->x) * (c->y - a->y) - (b->y - a->y) * (c->x - a->x);
+		if (!isfinite(area) || area == 0.0f) continue;
+		rvn_color_t ca = rvn_paint_color(painter, rvn_rgba(a->r, a->g, a->b, a->a));
+		rvn_color_t cb = rvn_paint_color(painter, rvn_rgba(b->r, b->g, b->b, b->a));
+		rvn_color_t cc = rvn_paint_color(painter, rvn_rgba(c->r, c->g, c->b, c->a));
+		if (rvn_color_a(ca | cb | cc) == 0) continue;
+		RDrawInstance* instance = rvn_paint_triangle_instance(painter,
+			a->x, a->y, b->x, b->y, c->x, c->y);
+		if (!instance) continue;
+		instance->color = ca;
+		instance->border_color = cb;
+		/* Two exact 16-bit values avoid putting NaN bit patterns in float attributes. */
+		instance->uv[0] = (float)(cc & 0xFFFFu);
+		instance->uv[1] = (float)(cc >> 16);
+		instance->flags |= R_INSTANCE_TRIANGLE_GRADIENT;
+	}
 }
 
 void Rdraw_image(RPainter* painter, Rid texture, float x, float y, float width, float height,

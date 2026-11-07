@@ -40,6 +40,12 @@ typedef struct RSpring {
 	int started;
 } RSpring;
 
+/** Logical coordinates and straight RGBA components in [0, 1]. */
+typedef struct RGradientVertex {
+	float x, y;
+	float r, g, b, a;
+} RGradientVertex;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -72,6 +78,13 @@ extern "C" {
 
 	RAVEN_API void Rdraw_triangle(RPainter* painter, float x0, float y0, float x1, float y1,
 		float x2, float y2, float r, float g, float b, float a);
+
+	/**
+	 * @brief Draws triangles with interpolated vertex colors on the Vulkan backend.
+	 * Vertices are grouped in triples. The data is consumed before the call returns.
+	 * Non-finite and degenerate triangles are skipped.
+	 */
+	RAVEN_API void Rdraw_gradient_triangles(RPainter* painter, const RGradientVertex* vertices, size_t count);
 
 	/** @brief Texture stretched to a rectangle and multiplied by a tint color. */
 	RAVEN_API void Rdraw_image(RPainter* painter, Rid texture, float x, float y, float width, float height,

@@ -46,6 +46,8 @@
 #define R_INSTANCE_TEXTURED (1u << 4)
 /** SHADER: the effect is told nothing of the pointer (RShaderLook::pointer = R_FALSE). */
 #define R_INSTANCE_NO_POINTER (1u << 5)
+/** TRIANGLE: border_color is B; uv.xy holds the low and high halves of C. */
+#define R_INSTANCE_TRIANGLE_GRADIENT (1u << 6)
 
 /**
  * One primitive. All positions are in framebuffer pixels, origin top-left.

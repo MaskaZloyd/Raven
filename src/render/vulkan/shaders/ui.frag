@@ -18,6 +18,7 @@ const uint PRIM_BLUR     = 6u;
 const uint PRIM_CURVE    = 7u;
 const uint PRIM_MASK     = 15u;
 const uint FLAG_TEXTURED = 16u;
+const uint FLAG_TRIANGLE_GRADIENT = 64u;
 
 layout(set = 0, binding = 0) uniform sampler2D u_texture;
 /* the frame behind the glass primitives, as captured by the last backdrop command */
@@ -231,6 +232,18 @@ float sd_triangle(vec2 p, vec2 p0, vec2 p1, vec2 p2) {
 	return -sqrt(d.x) * sign(d.y);
 }
 
+float cross2(vec2 a, vec2 b) {
+	return a.x * b.y - a.y * b.x;
+}
+
+bool owns_edge(vec2 edge) {
+	return edge.y < 0.0 || (edge.y == 0.0 && edge.x > 0.0);
+}
+
+bool covers_edge(float weight, vec2 edge) {
+	return weight > 0.0 || (weight == 0.0 && owns_edge(edge));
+}
+
 void main() {
 	/* the derivatives of the coordinates are taken while the whole quad runs
 	 * (before the discard and the branches): they choose the mip level of the
@@ -265,8 +278,27 @@ void main() {
 		float d = sd_segment(p, v_rect.xy, v_rect.zw) - v_radii.x * 0.5;
 		coverage = clamp(0.5 - d, 0.0, 1.0);
 	} else if (kind == PRIM_TRIANGLE) {
-		float d = sd_triangle(p, v_rect.xy, v_rect.zw, v_radii.xy);
-		coverage = clamp(0.5 - d, 0.0, 1.0);
+		vec2 a = v_rect.xy, b = v_rect.zw, c = v_radii.xy;
+		if ((v_flags & FLAG_TRIANGLE_GRADIENT) != 0u) {
+			float area = cross2(b - a, c - a);
+			if (abs(area) < 1e-6) discard;
+			float winding = sign(area);
+			vec3 weights = vec3(cross2(c - b, p - b),
+			                    cross2(a - c, p - c),
+			                    cross2(b - a, p - a)) * winding;
+			/* Shared edges have one owner, including on translucent meshes. */
+			if (!covers_edge(weights.x, (c - b) * winding) ||
+			    !covers_edge(weights.y, (a - c) * winding) ||
+			    !covers_edge(weights.z, (b - a) * winding)) discard;
+			weights /= abs(area);
+			uint packed = uint(v_params.x) | (uint(v_params.y) << 16);
+			vec4 third = unpackUnorm4x8(packed);
+			third.rgb *= third.a;
+			color = weights.x * v_color + weights.y * v_border_color + weights.z * third;
+		} else {
+			float d = sd_triangle(p, a, b, c);
+			coverage = clamp(0.5 - d, 0.0, 1.0);
+		}
 	} else if (kind == PRIM_CURVE) {
 		/* a cubic curve, followed as a chain of short segments: the nearest one gives the distance and how far along it is */
 		vec2 a = v_rect.xy, b = v_radii.xy, c = v_radii.zw, e = v_rect.zw;

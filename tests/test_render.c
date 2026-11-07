@@ -938,6 +938,35 @@ static void test_windows_look(void) {
 	Rtheme_apply(R_THEME_DARK);
 }
 
+static void paint_gradient_test(Rid widget, RPainter* painter, float width, float height, void* data) {
+	(void)widget; (void)width; (void)height; (void)data;
+	Rdraw_push_clip_rect(painter, 20.0f, 20.0f, 100.0f, 100.0f);
+	const RGradientVertex vertices[] = {
+		{10, 10, 1, 0, 0, 1},
+		{130, 10, 0, 1, 0, 1},
+		{10, 130, 0, 0, 1, 1},
+	};
+	Rdraw_gradient_triangles(painter, vertices, sizeof(vertices) / sizeof(vertices[0]));
+	Rdraw_pop_clip_rect(painter);
+}
+
+static void test_gradient_triangles(void) {
+	Rid window = Rwindow_create("Gradient", 200, 160, 0);
+	Rid canvas = Rwidget_create(R_WIDGET_CUSTOM);
+	Rwindow_set_content(window, canvas);
+	Rwindow_set_clear_color(window, 0, 0, 0, 1);
+	Rcustom_set_paint_callback(canvas, paint_gradient_test, NULL);
+	capture(window);
+	const uint8_t* red = pixel_at(28, 28);
+	const uint8_t* green = pixel_at(96, 26);
+	const uint8_t* blue = pixel_at(26, 96);
+	CHECK(red[0] > 2 * red[1] && red[0] > 2 * red[2]);
+	CHECK(green[1] > 2 * green[0] && green[1] > 2 * green[2]);
+	CHECK(blue[2] > 2 * blue[0] && blue[2] > 2 * blue[1]);
+	CHECK_PIXEL(15, 25, 0, 0, 0);
+	Rwindow_destroy(window);
+}
+
 int main(void) {
 	/* failures to start are expected on machines without Vulkan: stay quiet */
 	/* RAVEN_TEST_WINDOWED=1 forces a real window, to test the window system path too */
@@ -957,6 +986,7 @@ int main(void) {
 
 	RUN(test_shapes);
 	RUN(test_clipping);
+	RUN(test_gradient_triangles);
 	RUN(test_textures);
 	RUN(test_mipmaps);
 	RUN(test_text);

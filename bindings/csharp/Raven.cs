@@ -2340,6 +2340,20 @@ namespace Raven
     }
 
     /// <summary>
+    /// Logical coordinates and straight RGBA components in [0, 1].
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RGradientVertex
+    {
+        public float x;
+        public float y;
+        public float r;
+        public float g;
+        public float b;
+        public float a;
+    }
+
+    /// <summary>
     /// How an effect is drawn. Start from Rshader_look_init.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
@@ -7993,6 +8007,22 @@ namespace Raven
 
         [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
         public static extern void Rdraw_triangle(IntPtr painter, float x0, float y0, float x1, float y1, float x2, float y2, float r, float g, float b, float a);
+
+        /// <summary>
+        /// Draws triangles with interpolated vertex colors on the Vulkan backend.
+        /// Vertices are grouped in triples. The data is consumed before the call returns.
+        /// Non-finite and degenerate triangles are skipped.
+        /// </summary>
+        [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void Rdraw_gradient_triangles(IntPtr painter, ref RGradientVertex vertices, UIntPtr count);
+
+        /// <summary>
+        /// Draws triangles with interpolated vertex colors on the Vulkan backend.
+        /// Vertices are grouped in triples. The data is consumed before the call returns.
+        /// Non-finite and degenerate triangles are skipped.
+        /// </summary>
+        [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void Rdraw_gradient_triangles(IntPtr painter, IntPtr vertices, UIntPtr count);
 
         /// <summary>
         /// Texture stretched to a rectangle and multiplied by a tint color.

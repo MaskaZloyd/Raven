@@ -2321,6 +2321,11 @@ public:
 
 	void triangle(float x0, float y0, float x1, float y1, float x2, float y2, float r, float g, float b, float a) const { Rdraw_triangle(painter_, x0, y0, x1, y1, x2, y2, r, g, b, a); }
 
+	/// Draws triangles with interpolated vertex colors on the Vulkan backend.
+	/// Vertices are grouped in triples. The data is consumed before the call returns.
+	/// Non-finite and degenerate triangles are skipped.
+	void gradient_triangles(const RGradientVertex* vertices, size_t count) const { Rdraw_gradient_triangles(painter_, vertices, count); }
+
 	/// Texture stretched to a rectangle and multiplied by a tint color.
 	void image(Rid texture, float x, float y, float width, float height, float r, float g, float b, float a) const { Rdraw_image(painter_, texture, x, y, width, height, r, g, b, a); }
 
